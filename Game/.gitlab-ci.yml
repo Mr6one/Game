@@ -1,0 +1,57 @@
+image: python:3.7
+
+variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+stages:
+    - install
+    - test
+    - build_wheel
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+
+before_script:
+    - python -V
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+
+install_requirements:
+    stage: install
+    script:
+        - pip install -r requirements.txt
+
+tests:
+    stage: test
+    script:
+        - PYTHONPATH=. python -m pytest --cov . tests
+    dependencies:
+        - install_requirements
+    coverage: '/TOTAL.*\s+(\d+%)$/'
+
+style_tests:
+    stage: test
+    script:
+        - PYTHONPATH=. python -m flake8 *.py
+        - PYTHONPATH=. python -m pylint --disable=C0111,R0903,R0902,R0205,E1121,E1101,C0200,R0914,R0913,R0912,C1801 *.py
+    dependencies:
+        - install_requirements
+    coverage: '/TOTAL.*\s+(\d+%)$/'
+
+build_wheel:
+    stage: build_wheel
+    script:
+        - python setup.py bdist_wheel
+    only:
+        - dev
+    artifacts:
+        paths:
+            - dist/game-1.0-py3-none-any.whl
+        expire_in: 1 week
+    dependencies:
+        - tests
+        - style_tests

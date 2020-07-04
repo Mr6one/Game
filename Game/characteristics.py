@@ -1,0 +1,5 @@
+SPEAR = (100, 5, 3)
+SWORDSMAN = (100, 4, 3)
+ARCHER = (100, 0.7, 3)
+ARBALESTER = (100, 1, 3)
+SETTLER = (50, 1, 3)
